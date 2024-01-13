@@ -1,0 +1,4 @@
+requests~=2.31.0
+beautifulsoup4~=4.12.2
+cachetools~=5.3.2
+pillow~=10.2.0
