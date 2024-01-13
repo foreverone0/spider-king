@@ -1,6 +1,6 @@
 import unittest
 
-from king.modules import PublishApi
+from spider_king.modules import PublishApi
 
 
 class ApiTestCase(unittest.TestCase):

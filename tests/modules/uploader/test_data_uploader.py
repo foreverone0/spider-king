@@ -1,6 +1,6 @@
 import unittest
 
-from king.modules.uploader.data_uploader import DataUploader
+from spider_king.modules import DataUploader
 
 
 class MyTestCase(unittest.TestCase):
