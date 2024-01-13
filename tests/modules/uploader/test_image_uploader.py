@@ -1,6 +1,6 @@
 import unittest
 
-from modules.uploader.image_uploader import ImageUploader
+from king.modules.uploader import ImageUploader
 
 
 class MyTestCase(unittest.TestCase):

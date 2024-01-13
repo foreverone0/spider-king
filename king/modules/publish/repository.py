@@ -3,7 +3,7 @@ from typing import Optional, List
 
 from bs4 import BeautifulSoup
 
-from modules.publish.api import PublishApi, PublishPostAttachment
+from king.modules.publish.api import PublishApi, PublishPostAttachment
 
 
 class PublishRepository:

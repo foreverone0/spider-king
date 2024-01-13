@@ -8,8 +8,6 @@ import requests
 from PIL import Image
 from cachetools import cached, TTLCache
 
-from modules.image import read_image_from_bytes
-
 
 class ImageUploader:
     """

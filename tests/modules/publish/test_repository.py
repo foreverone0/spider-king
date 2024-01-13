@@ -1,8 +1,8 @@
 import unittest
 from io import BytesIO
 
-from modules.publish.api import PublishPostAttachment
-from modules.publish.repository import PublishRepository
+from king.modules import PublishPostAttachment
+from king.modules.publish.repository import PublishRepository
 
 
 class RepositoryTestCase(unittest.TestCase):

@@ -1,6 +1,6 @@
 import unittest
 
-from modules.publish.api import PublishApi
+from king.modules import PublishApi
 
 
 class ApiTestCase(unittest.TestCase):
