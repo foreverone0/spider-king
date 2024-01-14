@@ -4,9 +4,11 @@ from io import BytesIO
 from typing import Optional
 from urllib import parse
 
-import requests
+import httpx
+
 from PIL import Image
-from cachetools import cached, TTLCache
+from asyncache import cached
+from cachetools import TTLCache
 
 
 class ImageUploader:
@@ -20,7 +22,7 @@ class ImageUploader:
         self.cookies = {}
 
     @cached(cache=TTLCache(maxsize=1, ttl=60 * 30))
-    def get_auth_token(self) -> str:
+    async def get_auth_token(self) -> str:
         """
         获取图床的auth_token
         """
@@ -39,8 +41,8 @@ class ImageUploader:
             'Sec-Fetch-Site': 'none',
             'Sec-Fetch-User': '?1',
         }
-
-        response = requests.get(self.url, headers=headers)
+        async with httpx.AsyncClient() as client:
+            response = await client.get(self.url, headers=headers)
         response.raise_for_status()
 
         auth_token_pattern = r'<input type="hidden" name="auth_token" value="(.+?)">'
@@ -49,14 +51,14 @@ class ImageUploader:
             raise Exception('获取auth_token失败')
         auth_token = auth_token.group(1)
 
-        self.cookies = response.cookies.get_dict()
+        self.cookies = response.cookies
+
         return auth_token
 
-    def upload(self,
-               upload_type: str,
-               source: str | bytes,
-               filename: Optional[str] = None,
-               ) -> str:
+    async def upload(self,
+                     source: str | bytes,
+                     filename: Optional[str] = None,
+                     ) -> str:
         """
         上传图片
 
@@ -66,47 +68,44 @@ class ImageUploader:
         :return:
         """
         url = parse.urljoin(self.url, '/json')
-        auth_token = self.get_auth_token()
+        auth_token = await self.get_auth_token()
         timestamp = int(datetime.now().timestamp() * 1000)
         files = {
-
-            'type': (None, upload_type),
+            'type': (None, 'file'),
             'action': (None, 'upload'),
             'privacy': (None, 'null'),
-            'timestamp': (None, timestamp),
+            'timestamp': (None, str(timestamp)),
             'auth_token': (None, auth_token),
             'category_id': (None, 'null'),
-            'nsfw': (None, 0),
+            'nsfw': (None, '0'),
             'album_id': (None, 'null')
         }
 
-        if upload_type == 'url':
-            files['source'] = (None, source)
-        else:
-            # 需要上传文件时,需要先把图片转换成jpg或者gif格式
+        # 需要上传文件时,需要先把图片转换成jpg或者gif格式
+        filename = filename or 'image.jpg'
+
+        with BytesIO(source) as img_io:
+            image = Image.open(img_io)
+
+        if image.format != 'JPEG' and image.format != 'GIF':
+            image = image.convert('RGB')
             filename = filename or 'image.jpg'
+            img_byte_arr = BytesIO()
+            image.save(img_byte_arr, format='JPEG')
+            source = img_byte_arr.getvalue()
+            img_byte_arr.close()
 
-            with BytesIO(source) as img_io:
-                image = Image.open(img_io)
+        elif image.format == 'GIF':
+            filename = filename or 'image.gif'
 
-            if image.format != 'JPEG' and image.format != 'GIF':
-                image = image.convert('RGB')
-                filename = filename or 'image.jpg'
-                img_byte_arr = BytesIO()
-                image.save(img_byte_arr, format='JPEG')
-                source = img_byte_arr.getvalue()
-                img_byte_arr.close()
+        files['source'] = (filename, source)
 
-            elif image.format == 'GIF':
-                filename = filename or 'image.gif'
+        async with httpx.AsyncClient() as client:
+            response = await client.post(url, files=files, cookies=self.cookies)
 
-            files['source'] = (filename, source)
-
-        response = requests.post(url,
-                                 files=files,
-                                 cookies=self.cookies)
         response.raise_for_status()
         json = response.json()
+
         if json.get('status_code') != 200:
             raise Exception(json['success']['message'])
         return json.get('image').get('url')
