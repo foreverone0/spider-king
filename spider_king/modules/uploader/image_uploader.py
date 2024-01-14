@@ -52,11 +52,11 @@ class ImageUploader:
         self.cookies = response.cookies.get_dict()
         return auth_token
 
-    async def upload(self,
-                     upload_type: str,
-                     source: str | bytes,
-                     filename: Optional[str] = None,
-                     ) -> str:
+    def upload(self,
+               upload_type: str,
+               source: str | bytes,
+               filename: Optional[str] = None,
+               ) -> str:
         """
         上传图片
 
