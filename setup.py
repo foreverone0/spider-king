@@ -5,7 +5,7 @@ with open('requirements.txt') as f:
 
 setup(
     name='spider_king',  # 项目名称
-    version='0.2.4',  # 项目版本
+    version='0.2.5',  # 项目版本
     packages=find_packages(),  # 自动发现项目中的包
     description='spider core',  # 项目简介
     install_requires=requirements,  # 项目依赖
