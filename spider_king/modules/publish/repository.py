@@ -2,8 +2,9 @@ import re
 from typing import Optional, List
 
 from bs4 import BeautifulSoup
+from cachetools import cached, TTLCache
 
-from king.modules.publish.api import PublishApi, PublishPostAttachment
+from spider_king.modules.publish.api import PublishApi, PublishPostAttachment
 
 
 class PublishRepository:
@@ -31,6 +32,7 @@ class PublishRepository:
         if "您已经顺利登录" not in info.text:
             raise Exception(f'登录失败: {info.text}')
 
+    @cached(cache=TTLCache(maxsize=1, ttl=60 * 60 * 24))
     def get_post_info(self, fid: int) -> str:
         """
         获取发帖信息
@@ -55,14 +57,14 @@ class PublishRepository:
 
         return verify, hexie
 
-    def post(self,
-             fid: int,
-             title: str,
-             content: str,
-             verify: str,
-             hexie: str,
-             category_id: Optional[int] = None,
-             attachments: Optional[List[PublishPostAttachment]] = None) -> None:
+    def post(
+            self,
+            fid: int,
+            title: str,
+            content: str,
+            category_id: Optional[int] = None,
+            attachments: Optional[List[PublishPostAttachment]] = None,
+    ) -> str:
         """
         发帖
 
@@ -75,14 +77,27 @@ class PublishRepository:
         :param attachments:
         :return:
         """
+        hexie, verify = self.get_post_info(fid)
 
-        html = self._api.post(fid, title, content, verify, hexie, category_id, attachments)
-        # <span class="f14"><a href=thread.php?fid=18>[ 发帖完毕点击进入主题列表 ]</a></span><br />
-        if '发帖完毕点击进入主题列表' not in html and '请等待管理员审核' not in html:
-            doc = BeautifulSoup(html, 'html.parser')
-            info = doc.find('span', class_='f14')
+        html = self._api.post(
+            fid, title, content, verify, hexie, category_id, attachments
+        )
+        doc = BeautifulSoup(html, "html.parser")
+        if "发帖完毕点击进入主题列表" not in html and "请等待管理员审核" not in html:
+            info = doc.find("span", class_="f14")
             if info is not None:
-                raise Exception(f'发帖失败: {info.text}')
+                raise Exception(f"发帖失败: {info.text}")
             else:
-
                 raise Exception(f'发帖失败" {html}')
+
+        a = doc.find(
+            "a",
+            attrs={
+                "href": re.compile(r"^read.php"),
+                "class": re.compile(r"show-back fl"),
+            },
+        )
+        if a is None:
+            raise Exception("发帖失败: 未找到返回链接")
+        url = a["href"]
+        return url

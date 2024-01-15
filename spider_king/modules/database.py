@@ -1,5 +1,13 @@
-from sqlalchemy import Column, String, create_engine
+from datetime import datetime
+
+import pytz
+from sqlalchemy import Column, String, create_engine, Integer, DateTime
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, Session
+
+
+def get_local_time():
+    tz = pytz.timezone('Asia/Shanghai')
+    return datetime.now(tz).replace(tzinfo=None)
 
 
 class Base(DeclarativeBase):
@@ -7,23 +15,15 @@ class Base(DeclarativeBase):
 
 
 class PostEntity(Base):
-    __tablename__ = 'post'
+    __tablename__ = 'posts'
     id: Mapped[int] = mapped_column(primary_key=True)
-
-    # 帖子标题
-    title: Mapped[str] = Column(String(255))
-
-    # 帖子所属板块id
-    src_fid: Mapped[str] = mapped_column(String())
-
-    # 帖子链接
-    src_url: Mapped[str] = mapped_column(String())
-
-    # 需要复制到的板块id
-    dst_fid: Mapped[str] = mapped_column(String())
-
-    # 发布链接
-    dst_url: Mapped[str] = mapped_column(String())
+    title: Mapped[str] = Column(String(255))  # 帖子标题
+    src_fid: Mapped[str] = Column(String(20))  # 帖子所属板块id
+    src_url: Mapped[str] = Column(String)  # 帖子链接
+    src_tid: Mapped[str] = Column(String(20))  # 帖子id
+    dst_fid: Mapped[str] = Column(String(20))  # 发布板块id
+    dst_url: Mapped[str] = Column(String)  # 发布链接
+    created_at: Mapped[datetime] = Column(DateTime, default=get_local_time)  # 创建时间
 
     def __repr__(self):
         return f'<PostEntity(id={self.id}, title={self.title}, src_fid:{self.src_fid}, dst_fid:{self.dst_fid})>'
@@ -64,7 +64,7 @@ class SpiderDatabase:
         """
         session = Session(bind=self.engine)
         try:
-            return session.query(PostEntity).filter(PostEntity.id == src_id).first() is not None
+            return session.query(PostEntity).filter(PostEntity.src_fid == str(src_id).strip()).first() is not None
         except Exception as e:
             session.rollback()
             raise e

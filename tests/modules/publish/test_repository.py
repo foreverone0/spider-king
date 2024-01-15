@@ -1,7 +1,10 @@
 import unittest
+from datetime import datetime
 from io import BytesIO
 
-from spider_king.modules import PublishPostAttachment
+import pytz
+
+from spider_king.modules.publish.api import PublishPostAttachment
 from spider_king.modules.publish.repository import PublishRepository
 
 
@@ -18,6 +21,8 @@ class RepositoryTestCase(unittest.TestCase):
 
     def test_get_post_info(self):
         self.repository.login()
+        verify, hexie = self.repository.get_post_info(3)
+        verify, hexie = self.repository.get_post_info(3)
         verify, hexie = self.repository.get_post_info(3)
         self.assertEqual(len(verify), 8)
         self.assertEqual(len(hexie), 8)
