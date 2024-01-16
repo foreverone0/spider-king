@@ -55,16 +55,16 @@ class SpiderDatabase:
         finally:
             session.close()
 
-    def exist_post(self, src_id: str):
+    def exist_post(self, src_tid: str):
         """
         判断帖子是否存在
 
-        :param src_id
+        :param src_tid
         :return:
         """
         session = Session(bind=self.engine)
         try:
-            return session.query(PostEntity).filter(PostEntity.src_fid == str(src_id).strip()).first() is not None
+            return session.query(PostEntity).filter(PostEntity.src_tid == str(src_tid).strip()).first() is not None
         except Exception as e:
             session.rollback()
             raise e
