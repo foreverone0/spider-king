@@ -22,7 +22,7 @@ def get_logger(name: str):
     if not os.path.exists(log_directory):
         os.makedirs(log_directory)
 
-    file_handler = logging.FileHandler(os.path.join(log_directory, f"{name}.log"))
+    file_handler = logging.FileHandler(os.path.join(log_directory, f"{name}.log"), encoding='utf-8')
     file_handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
 
     # 将handlers添加到logger
