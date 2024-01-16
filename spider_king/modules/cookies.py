@@ -10,7 +10,6 @@ def get_cookies(cookies: str) -> list[dict]:
         {
             "name": c[0],
             "value": c[1],
-            "domain": "3456bbb.com",
             "path": "/",
         }
         for c in ck
