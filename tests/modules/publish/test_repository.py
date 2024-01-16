@@ -2,10 +2,7 @@ import unittest
 from datetime import datetime
 from io import BytesIO
 
-import pytz
-
-from spider_king.modules.publish.api import PublishPostAttachment
-from spider_king.modules.publish.repository import PublishRepository
+from spider_king.modules.publish import PublishRepository, PublishPostAttachment
 
 
 class RepositoryTestCase(unittest.TestCase):
@@ -33,9 +30,10 @@ class RepositoryTestCase(unittest.TestCase):
 
     def test_post(self):
         self.repository.login()
-        verify, hexie = self.repository.get_post_info(3)
+        fid = 271
 
-        fid = 18
+
+
         title = '测试标题'
         content = '测试内容'
         with open('test.png', 'rb') as f:
@@ -61,11 +59,13 @@ class RepositoryTestCase(unittest.TestCase):
             rar_attach,
         ]
 
-        self.repository.post(fid, title, content, verify, hexie)
-        self.repository.post(fid, title, content, verify, hexie, attachments=attachments)
+        self.repository.post(fid, title, content, )
+        self.repository.post(fid, title, content,  attachments=attachments)
+        self.repository.post(fid, title, content, category_id=592 ,attachments=attachments)
+
 
         with self.assertRaises(Exception):
-            self.repository.post(fid, title, content, verify, hexie, attachments=[
+            self.repository.post(fid, title, content,  attachments=[
                 PublishPostAttachment(
                     name='测试压缩包1.rar',
                     content=BytesIO(b'1234567890'),

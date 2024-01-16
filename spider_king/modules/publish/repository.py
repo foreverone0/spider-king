@@ -8,11 +8,13 @@ from spider_king.modules.publish.api import PublishApi, PublishPostAttachment
 
 
 class PublishRepository:
-    def __init__(self,
-                 username: str,
-                 password: str,
-                 question: Optional[int] = None,
-                 answer: Optional[str] = None):
+    def __init__(
+            self,
+            username: str,
+            password: str,
+            question: Optional[int] = None,
+            answer: Optional[str] = None,
+    ):
         self._api = PublishApi(username, password, question, answer)
 
     def login(self) -> None:
@@ -24,13 +26,13 @@ class PublishRepository:
 
         html = self._api.login()
 
-        doc = BeautifulSoup(html, 'html.parser')
-        info = doc.find('span', class_='f14')
+        doc = BeautifulSoup(html, "html.parser")
+        info = doc.find("span", class_="f14")
         if info is None:
-            raise Exception('登录失败')
+            raise Exception("登录失败")
 
         if "您已经顺利登录" not in info.text:
-            raise Exception(f'登录失败: {info.text}')
+            raise Exception(f"登录失败: {info.text}")
 
     @cached(cache=TTLCache(maxsize=1, ttl=60 * 60 * 24))
     def get_post_info(self, fid: int) -> str:
@@ -46,13 +48,13 @@ class PublishRepository:
         verify_pattern = re.compile(r"verifyhash\s*=\s*'(\w+)';")
         verify = verify_pattern.search(html)
         if verify is None:
-            raise Exception('获取verify失败')
+            raise Exception("获取verify失败")
         verify = verify.group(1)
 
         hexie_pattern = re.compile(r"_hexie\.value\s*=\s*'(\w+)';")
         hexie = hexie_pattern.search(html)
         if hexie is None:
-            raise Exception('获取hexie失败')
+            raise Exception("获取hexie失败")
         hexie = hexie.group(1)
 
         return verify, hexie
@@ -62,6 +64,7 @@ class PublishRepository:
             fid: int,
             title: str,
             content: str,
+
             category_id: Optional[int] = None,
             attachments: Optional[List[PublishPostAttachment]] = None,
     ) -> str:
@@ -71,13 +74,12 @@ class PublishRepository:
         :param fid:
         :param title:
         :param content:
-        :param verify:
-        :param hexie:
+
         :param category_id:
         :param attachments:
         :return:
         """
-        hexie, verify = self.get_post_info(fid)
+        verify, hexie = self.get_post_info(fid)
 
         html = self._api.post(
             fid, title, content, verify, hexie, category_id, attachments
