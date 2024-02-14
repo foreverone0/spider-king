@@ -91,16 +91,16 @@ class ImageUploader:
             with BytesIO(source) as img_io:
                 image = Image.open(img_io)
 
-            if image.format != 'JPEG' and image.format != 'GIF':
-                image = image.convert('RGB')
-                filename = filename or 'image.jpg'
-                img_byte_arr = BytesIO()
-                image.save(img_byte_arr, format='JPEG')
-                source = img_byte_arr.getvalue()
-                img_byte_arr.close()
+                if image.format != 'JPEG' and image.format != 'GIF':
+                    image = image.convert('RGB')
+                    filename = filename or 'image.jpg'
+                    img_byte_arr = BytesIO()
+                    image.save(img_byte_arr, format='JPEG')
+                    source = img_byte_arr.getvalue()
+                    img_byte_arr.close()
 
-            elif image.format == 'GIF':
-                filename = filename or 'image.gif'
+                elif image.format == 'GIF':
+                    filename = filename or 'image.gif'
 
             files['source'] = (filename, source)
 
