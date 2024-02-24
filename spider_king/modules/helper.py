@@ -1,3 +1,6 @@
+import re
+from urllib import parse
+
 
 def get_size_str(size: int):
     """获取文件大小字符串
@@ -30,3 +33,18 @@ def cookies_to_dict(cookies):
     cookies = [cookie.split("=", 1) for cookie in cookies]
     cookies = {cookie[0]: cookie[1] for cookie in cookies if len(cookie) == 2}
     return cookies
+
+def get_filename_from_cd(cd):
+    """从 Content-Disposition 中提取文件名"""
+    if not cd:
+        return None
+    fname = re.findall(r'filename="([^"]+)"', cd)
+    if len(fname) == 0:
+        # 如果没有找到，尝试提取 filename*= 后的编码文件名
+        fname = re.findall(r"filename\*=UTF-8''([^']+)", cd)
+
+    if len(fname) == 1:
+        # 对提取到的文件名进行 URL 解码
+        return parse.unquote(fname[0])
+
+    return None
