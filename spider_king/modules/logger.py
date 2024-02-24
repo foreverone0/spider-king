@@ -1,4 +1,6 @@
 import logging
+from logging.handlers import RotatingFileHandler
+
 from rich.logging import RichHandler
 from rich.console import Console
 import os
@@ -29,3 +31,32 @@ def get_logger(name: str):
     logger.addHandler(console_handler)
     logger.addHandler(file_handler)
     return logger
+
+
+def config_logger(path, name):
+    """
+    配置日志
+    :return:
+    """
+    if not os.path.exists(path):
+        os.makedirs(path)
+    # 配置日志
+    formatter = logging.Formatter(
+        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    )
+    file_handler = RotatingFileHandler(
+        os.path.join(path, f'{name}.log'),
+        maxBytes=1024 * 1024 * 100,
+        backupCount=20,
+        encoding='utf-8'
+    )
+    file_handler.setFormatter(formatter)
+
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(logging.INFO)
+    console_handler.setFormatter(formatter)
+
+    logging.getLogger('httpx').setLevel(logging.ERROR)
+    logging.getLogger('httpcore').setLevel(logging.ERROR)
+
+    logging.basicConfig(level=logging.DEBUG, handlers=[file_handler, console_handler])
