@@ -8,3 +8,5 @@ asyncache~=0.3.1
 httpx~=1.0.0b0
 pytz~=2023.3.post1
 rich~=13.7.0
+python-box~=7.1.1
+wxPython~=4.2.1
