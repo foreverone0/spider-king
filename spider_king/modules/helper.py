@@ -1,5 +1,6 @@
 import re
 from urllib import parse
+from urllib.parse import urlparse
 
 
 def get_size_str(size: int):
@@ -48,3 +49,12 @@ def get_filename_from_cd(cd):
         return parse.unquote(fname[0])
 
     return None
+
+def extract_domain(url):
+    # 解析URL获取网络位置部分
+    netloc = urlparse(url).netloc
+    # 分割域名为部分
+    parts = netloc.split('.')
+    # 仅保留最后两部分（二级域名和顶级域名），并前置一个点构成cookie适用的域名格式
+    domain_for_cookie = '.' + '.'.join(parts[-2:])
+    return domain_for_cookie
